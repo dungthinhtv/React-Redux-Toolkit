@@ -11,6 +11,23 @@ export const getTodos = createAsyncThunk('todos/todoFetched', async () => {
   return response.data;
 });
 
+export const addTodo = createAsyncThunk('todos/todoAdded', async (title) => {
+  const newTodo = { id: nanoid(), title: title, completed: false };
+  //   const response = await axios.post(
+  //     "https://jsonplaceholder.typicode.com/todos",
+  //     newTodo
+  //   );
+  return newTodo;
+});
+
+export const deleteTodo = createAsyncThunk(
+  'todos/todoDeleted',
+  async (todoId) => {
+    await axios.delete(`https://jsonplaceholder.typicode.com/todos/${todoId}`);
+    return todoId;
+  }
+);
+
 const todosSlice = createSlice({
   name: 'todos',
   initialState: {
@@ -33,13 +50,13 @@ const todosSlice = createSlice({
     ],
   },
   reducers: {
-    addTodo(state, action) {
-      state.allTodos.unshift({
-        id: nanoid(),
-        title: action.payload,
-        completed: false,
-      });
-    },
+    // addTodo(state, action) {
+    //   state.allTodos.unshift({
+    //     id: nanoid(),
+    //     title: action.payload,
+    //     completed: false,
+    //   });
+    // },
     markComplete(state, action) {
       const todoId = action.payload;
       state.allTodos = state.allTodos.map((todo) => {
@@ -47,10 +64,10 @@ const todosSlice = createSlice({
         return todo;
       });
     },
-    deleteTodo(state, action) {
-      const todoId = action.payload;
-      state.allTodos = state.allTodos.filter((todo) => todo.id !== todoId);
-    },
+    // deleteTodo(state, action) {
+    //   const todoId = action.payload;
+    //   state.allTodos = state.allTodos.filter((todo) => todo.id !== todoId);
+    // },
     // todoFetched(state, action) {
     //   state.allTodos = action.payload;
     // },
@@ -85,15 +102,29 @@ const todosSlice = createSlice({
     // },
   },
   extraReducers: {
+    // Get all todos
     [getTodos.pending]: (state, action) => {
       console.log('fetching todos from backend ...');
     },
     [getTodos.fulfilled]: (state, action) => {
-      console.log('Done');
+      console.log('Getted Done');
       state.allTodos = action.payload;
     },
     [getTodos.rejected]: (state, action) => {
       console.log('Get failed !!!');
+    },
+    // Add todo
+    [addTodo.fulfilled]: (state, action) => {
+      console.log('Added Done');
+      state.allTodos.unshift(action.payload);
+    },
+
+    // Delete todo
+    [deleteTodo.fulfilled]: (state, action) => {
+      console.log('Deleted Done');
+      state.allTodos = state.allTodos.filter(
+        (todo) => todo.id !== action.payload
+      );
     },
   },
 });
@@ -116,8 +147,7 @@ const todosReducer = todosSlice.reducer;
 export const todosSelector = (state) => state.todosReducer.allTodos;
 
 // Action export
-export const { addTodo, markComplete, deleteTodo, todoFetched } =
-  todosSlice.actions;
+export const { markComplete } = todosSlice.actions;
 // export const {} = todosSlice.actions;
 
 export default todosReducer;
